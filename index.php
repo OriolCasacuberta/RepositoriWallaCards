@@ -3,74 +3,57 @@
 session_start();
 
 // Requereix el fitxer de connexió persistent
-require_once ('connecta_bd_persisten.php');
+require_once('./web/connecta_db_persistent.php');
 
 // Comprovar si la connexió s'ha establert correctament
 if ($db) {
-    // Si la connexió s'ha establert correctament
-    if ($_SERVER['REQUEST_METHOD'] === 'POST')
-    {
-        // Recuperar valors del formulari
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = '';
         $password = '';
 
-        // Comprovar si s'ha enviat el camp 'username'
-        if (isset($_POST['username'])) { $username = $_POST['username']; }
+        if (isset($_POST['username'])) {
+            $username = $_POST['username'];
+        }
+        if (isset($_POST['password'])) {
+            $password = $_POST['password'];
+        }
 
-        // Comprovar si s'ha enviat el camp 'password'
-        if (isset($_POST['password'])) { $password = $_POST['password']; }
-
-
-        // Si els camps no estan buits
-        if (!empty($username))
-        {
-            if (!empty($password))
-            {
-                // Preparar la consulta per verificar l'usuari
+        if (!empty($username)) {
+            if (!empty($password)) {
                 $stmt = $db->prepare("SELECT idUser, username, passHash, userFirstName, active 
-                FROM users WHERE username = :username AND active = 1 ");
-                
+                FROM users WHERE username = :username AND active = 1");
                 $stmt->bindParam(':username', $username, PDO::PARAM_STR);
                 $stmt->execute();
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                // Si s'ha trobat l'usuari i la contrasenya és correcta
                 if ($user) {
                     if (password_verify($password, $user['passHash'])) {
-                        // Actualitzar la data de l'última sessió iniciada
                         $updateStmt = $db->prepare("UPDATE users SET lastSignIn = NOW() WHERE idUser = :idUser");
                         $updateStmt->bindParam(':idUser', $user['idUser'], PDO::PARAM_INT);
                         $updateStmt->execute();
 
-                        // Guardar dades a la sessió
                         $_SESSION['user'] = [
                             'id' => $user['idUser'],
                             'username' => $user['username'],
                             'name' => $user['userFirstName']
                         ];
 
-                        // Redirigir a la pàgina principal
                         header('Location: dashboard.php');
                         exit;
                     } else {
-                        // Si la contrasenya no és correcta
                         $error = "Contrasenya incorrecta.";
                     }
                 } else {
-                    // Si l'usuari no existeix o no està actiu
                     $error = "Usuari no trobat o no actiu.";
                 }
             } else {
-                // Si la contrasenya està buida
                 $error = "Si us plau, introdueix una contrasenya.";
             }
         } else {
-            // Si el nom d'usuari està buit
             $error = "Si us plau, introdueix un nom d'usuari.";
         }
     }
 } else {
-    // Si no s'ha pogut establir la connexió a la base de dades
     die("No s'ha pogut establir la connexió a la base de dades.");
 }
 ?>
@@ -81,11 +64,21 @@ if ($db) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sessió</title>
-    <link rel="stylesheet" href="/web/style.css">
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
-    <div class="login-container">
-        <h1>Iniciar Sessió</h1>
+    <!-- Contenedor de imagen giratoria -->
+    <div class="rotating-images">
+        <div class="image-container">
+            <img src="./img/Charizard101.png" alt="Image 1" class="rotating-image">
+            <img src="./img/PKMReverse.png" alt="Image 2" class="rotating-image">
+        </div>
+    </div>
+
+    <!-- Formulario de inicio de sesión -->
+    <div class="contenidorLogin">
+        <img src="./img/WallaCards.png" alt="Logo WallaCards" class="logo">
+
         <?php if (isset($error)): ?>
             <p class="error"><?= htmlspecialchars($error) ?></p>
         <?php endif; ?>
@@ -94,6 +87,9 @@ if ($db) {
             <input type="password" name="password" placeholder="Contrasenya" required>
             <button type="submit">Inicia Sessió</button>
         </form>
+        <p class="register-link">
+            No tens un compte? <a href="./web/register.php">Registra't aquí</a>
+        </p>
     </div>
 </body>
 </html>
