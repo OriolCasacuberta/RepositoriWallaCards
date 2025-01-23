@@ -1,61 +1,83 @@
 <?php
-// Iniciar la sessió
-session_start();
 
-// Requereix el fitxer de connexió persistent
-require_once('./web/connecta_db_persistent.php');
+    session_start();
 
-// Comprovar si la connexió s'ha establert correctament
-if ($db) {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $username = '';
-        $password = '';
+    require_once ('./web/connecta_db_persistent.php');
 
-        if (isset($_POST['username'])) {
-            $username = $_POST['username'];
-        }
-        if (isset($_POST['password'])) {
-            $password = $_POST['password'];
-        }
+    if ($db)
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST')
+        {
+            $username = '';
+            $password = '';
 
-        if (!empty($username)) {
-            if (!empty($password)) {
-                $stmt = $db->prepare("SELECT idUser, username, passHash, userFirstName, active 
-                FROM users WHERE username = :username AND active = 1");
-                $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-                $stmt->execute();
-                $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                if ($user) {
-                    if (password_verify($password, $user['passHash'])) {
-                        $updateStmt = $db->prepare("UPDATE users SET lastSignIn = NOW() WHERE idUser = :idUser");
-                        $updateStmt->bindParam(':idUser', $user['idUser'], PDO::PARAM_INT);
-                        $updateStmt->execute();
-
-                        $_SESSION['user'] = [
-                            'id' => $user['idUser'],
-                            'username' => $user['username'],
-                            'name' => $user['userFirstName']
-                        ];
-
-                        header('Location: dashboard.php');
-                        exit;
-                    } else {
-                        $error = "Contrasenya incorrecta.";
-                    }
-                } else {
-                    $error = "Usuari no trobat o no actiu.";
-                }
-            } else {
-                $error = "Si us plau, introdueix una contrasenya.";
+            if (isset($_POST['username']))
+            {
+                $username = $_POST['username'];
             }
-        } else {
-            $error = "Si us plau, introdueix un nom d'usuari.";
+
+            if (isset($_POST['password']))
+            {
+                $password = $_POST['password'];
+            }
+
+            if (! empty($username))
+            {
+                if (! empty($password))
+                {
+                    $stmt = $db->prepare("SELECT idUser, username, passHash, userFirstName, active
+                    FROM users WHERE username = :username AND active = 1");
+                    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
+                    $stmt->execute();
+                    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                    if ($user)
+                    {
+                        if (password_verify($password, $user['passHash']))
+                        {
+                            $updateStmt = $db->prepare("UPDATE users SET lastSignIn = NOW() WHERE idUser = :idUser");
+                            $updateStmt->bindParam(':idUser', $user['idUser'], PDO::PARAM_INT);
+                            $updateStmt->execute();
+
+                            $_SESSION['user'] = [
+                                'id'       => $user['idUser'],
+                                'username' => $user['username'],
+                                'name'     => $user['userFirstName'],
+                            ];
+
+                            header('Location: dashboard.php');
+                            exit;
+                        }
+
+                        else
+                        {
+                            $error = "Contrasenya incorrecta.";
+                        } 
+                    }
+                    
+                    else
+                    {
+                        $error = "Usuari no trobat o no actiu.";
+                    }
+                }
+                
+                else
+                {
+                    $error = "Si us plau, introdueix una contrasenya.";
+                }
+            }
+            
+            else 
+            {
+                $error = "Si us plau, introdueix un nom d'usuari.";
+            }
         }
     }
-} else {
-    die("No s'ha pogut establir la connexió a la base de dades.");
-}
+    
+    else
+    {
+        echo "No s'ha pogut establir la connexió a la base de dades.";
+    }
 ?>
 
 <!DOCTYPE html>
@@ -63,15 +85,40 @@ if ($db) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sessió</title>
+    <title>Iniciar Sessió - WallaCards</title>
     <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/index.css">
 </head>
 <body>
-    <!-- Contenedor de imagen giratoria -->
+    <!-- Primera imagen giratoria -->
     <div class="rotating-images">
         <div class="image-container">
-            <img src="./img/Charizard101.png" alt="Image 1" class="rotating-image">
-            <img src="./img/PKMReverse.png" alt="Image 2" class="rotating-image">
+            <img src="./img/Charizard101.png" alt="Imatge 1-1" class="rotating-image">
+            <img src="./img/PKMReverse.png" alt="Imatge 1-2" class="rotating-image">
+        </div>
+    </div>
+
+    <!-- Segunda imagen giratoria -->
+    <div class="rotating-images">
+        <div class="image-container">
+            <img src="./img/TigerShark.png" alt="Imatge 2-1" class="rotating-image">
+            <img src="./img/TigerSharkQR.png" alt="Imatge 2-2" class="rotating-image">
+        </div>
+    </div>
+
+    <!-- Tercera imagen giratoria (opcional) -->
+    <div class="rotating-images">
+        <div class="image-container">
+            <img src="./img/SnapShot.png" alt="Imatge 3-1" class="rotating-image">
+            <img src="./img/SnapShotBack.png" alt="Imatge 3-2" class="rotating-image">
+        </div>
+    </div>
+
+    <!-- Tercera imagen giratoria (opcional) -->
+    <div class="rotating-images">
+        <div class="image-container">
+            <img src="./img/Nathan.png" alt="Imatge 4-1" class="rotating-image">
+            <img src="./img/NathanBack.png" alt="Imatge 4-2" class="rotating-image">
         </div>
     </div>
 
@@ -80,7 +127,7 @@ if ($db) {
         <img src="./img/WallaCards.png" alt="Logo WallaCards" class="logo">
 
         <?php if (isset($error)): ?>
-            <p class="error"><?= htmlspecialchars($error) ?></p>
+            <p class="error"><?php echo htmlspecialchars($error) ?></p>
         <?php endif; ?>
         <form method="POST" action="">
             <input type="text" name="username" placeholder="Nom d'usuari" required>
