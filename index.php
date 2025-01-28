@@ -1,84 +1,58 @@
 <?php
-
     session_start();
 
+    // Conexión a la base de datos
     require_once ('./web/connecta_db_persistent.php');
 
     if ($db)
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST')
         {
-            $username = '';
-            $password = '';
+            $identifier = trim($_POST['username'] ?? '');
+            $password = trim($_POST['password'] ?? '');
 
-            if (isset($_POST['username']))
+            if (!empty($identifier) && !empty($password))
             {
-                $username = $_POST['username'];
-            }
+                // Buscar usuario activo por username o email
+                $stmt = $db->prepare("SELECT idUser, username, mail, passHash, userFirstName, active FROM users
+                                    WHERE (username = :identifier OR mail = :identifier) AND active = 1");
 
-            if (isset($_POST['password']))
-            {
-                $password = $_POST['password'];
-            }
+                $stmt->bindParam(':identifier', $identifier, PDO::PARAM_STR);
+                $stmt->execute();
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if (! empty($username))
-            {
-                if (! empty($password))
+                if ($user && password_verify($password, $user['passHash']))
                 {
-                    $stmt = $db->prepare("SELECT idUser, username, passHash, userFirstName, active
-                    FROM users WHERE username = :username AND active = 1");
-                    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-                    $stmt->execute();
-                    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                    // Actualizar lastSignIn
+                    $updateStmt = $db->prepare("UPDATE users SET lastSignIn = NOW() WHERE idUser = :idUser");
+                    $updateStmt->bindParam(':idUser', $user['idUser'], PDO::PARAM_INT);
+                    $updateStmt->execute();
 
-                    if ($user)
-                    {
-                        if (password_verify($password, $user['passHash']))
-                        {
-                            $updateStmt = $db->prepare("UPDATE users SET lastSignIn = NOW() WHERE idUser = :idUser");
-                            $updateStmt->bindParam(':idUser', $user['idUser'], PDO::PARAM_INT);
-                            $updateStmt->execute();
+                    // Crear sesión y cookies
+                    $_SESSION['user'] = [
+                        'id' => $user['idUser'],
+                        'username' => $user['username'],
+                        'name' => $user['userFirstName']
+                    ];
 
-                            $_SESSION['user'] = [
-                                'id'       => $user['idUser'],
-                                'username' => $user['username'],
-                                'name'     => $user['userFirstName'],
-                            ];
+                    setcookie('username', $user['username'], time() + 3600, '/', '', true, true);
 
-                            header('Location: dashboard.php');
-                            exit;
-                        }
-
-                        else
-                        {
-                            $error = "Contrasenya incorrecta.";
-                        } 
-                    }
-                    
-                    else
-                    {
-                        $error = "Usuari no trobat o no actiu.";
-                    }
+                    // Redirigir a home.php
+                    header('Location: ./web/home.php');
+                    exit;
                 }
                 
-                else
-                {
-                    $error = "Si us plau, introdueix una contrasenya.";
-                }
+                else { $error = "L'usuari o la contrasenya no son correctes"; }
             }
             
-            else 
-            {
-                $error = "Si us plau, introdueix un nom d'usuari.";
-            }
+            else { $error = "No és possible iniciar sessió amb les dades facilitades."; }
         }
-    }
+
+    } 
     
-    else
-    {
-        echo "No s'ha pogut establir la connexió a la base de dades.";
-    }
+    else { die("No s'ha pogut establir la connexió a la base de dades."); }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="ca">

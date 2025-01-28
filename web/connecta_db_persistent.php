@@ -12,7 +12,7 @@
             // echo '<pre>';
             // echo "Connexió establerta! \n ";
             // echo '</pre>';
-            echo 'Connexió establerta!<br>';
+            // echo 'Connexió establerta!<br>';
         }
     }
 
