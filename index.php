@@ -1,6 +1,13 @@
 <?php
     session_start();
 
+    // Si el usuario ya está logueado, redirigir a home.php
+    if (isset($_SESSION['user']))
+    {
+        header('Location: ./web/home.php');
+        exit;
+    }
+
     // Conexión a la base de datos
     require_once ('./web/connecta_db_persistent.php');
 

@@ -1,0 +1,64 @@
+/* --- Contenedor Principal --- */
+.container {
+    background-color: #ffffff; /* Fondo semitransparente */
+    border-radius: 15px;
+    padding: 40px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+}
+
+/* --- Logo --- */
+.logo {
+    max-width: 70%;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+/* --- Título --- */
+h1 {
+    font-size: 2em;
+    margin-bottom: 15px;
+    color: #28a745;
+}
+
+/* --- Parágrafo --- */
+p {
+    font-size: 1.2em;
+    margin-bottom: 30px;
+    color: black;
+}
+
+/* --- Botón de Logout --- */
+.logout-button {
+    display: inline-block;
+    text-decoration: none;
+    background-color: #28a745;
+    color: white;
+    font-size: 1em;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.logout-button:hover {
+    background-color: #218838;
+    transform: scale(1.05);
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.8em;
+    }
+
+    p {
+        font-size: 1em;
+    }
+
+    .logout-button {
+        font-size: 0.9em;
+        padding: 8px 16px;
+    }
+}
