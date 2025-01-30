@@ -1,4 +1,5 @@
 <?php
+
     session_start();
     include 'functions.php';
 
@@ -26,6 +27,7 @@
             exit();
         }
     }
+    
 ?>
 
 
@@ -42,7 +44,7 @@
     <div class="contenidorLogin">
         <img src="../img/WallaCards.png" alt="Logo de WallaCards" class="logo">
 
-        <!-- Mostrar el mensaje de registro (si existe en la sesión) -->
+        <!-- Mostrar el missatge de registre (si existeix en la sessió) -->
         <?php
             if (isset($_SESSION['register_message']))
             {

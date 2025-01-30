@@ -1,14 +1,13 @@
 <?php
+
     session_start();
 
-    // Si el usuario ya está logueado, redirigir a home.php
     if (isset($_SESSION['user']))
     {
         header('Location: ./web/home.php');
         exit;
     }
 
-    // Conexión a la base de datos
     require_once ('./web/connecta_db_persistent.php');
 
     if ($db)
@@ -20,7 +19,6 @@
 
             if (!empty($identifier) && !empty($password))
             {
-                // Buscar usuario activo por username o email
                 $stmt = $db->prepare("SELECT idUser, username, mail, passHash, userFirstName, active FROM users
                                     WHERE (username = :identifier OR mail = :identifier) AND active = 1");
 
@@ -30,12 +28,10 @@
 
                 if ($user && password_verify($password, $user['passHash']))
                 {
-                    // Actualizar lastSignIn
                     $updateStmt = $db->prepare("UPDATE users SET lastSignIn = NOW() WHERE idUser = :idUser");
                     $updateStmt->bindParam(':idUser', $user['idUser'], PDO::PARAM_INT);
                     $updateStmt->execute();
 
-                    // Crear sesión y cookies
                     $_SESSION['user'] = [
                         'id' => $user['idUser'],
                         'username' => $user['username'],
@@ -44,7 +40,6 @@
 
                     setcookie('username', $user['username'], time() + 3600, '/', '', true, true);
 
-                    // Redirigir a home.php
                     header('Location: ./web/home.php');
                     exit;
                 }
@@ -54,9 +49,8 @@
             
             else { $error = "No és possible iniciar sessió amb les dades facilitades."; }
         }
+    }
 
-    } 
-    
     else { die("No s'ha pogut establir la connexió a la base de dades."); }
 ?>
 
@@ -71,7 +65,6 @@
     <link rel="stylesheet" href="./css/index.css">
 </head>
 <body>
-    <!-- Primera imagen giratoria -->
     <div class="rotating-images">
         <div class="image-container">
             <img src="./img/Charizard101.png" alt="Imatge 1-1" class="rotating-image">
@@ -79,7 +72,6 @@
         </div>
     </div>
 
-    <!-- Segunda imagen giratoria -->
     <div class="rotating-images">
         <div class="image-container">
             <img src="./img/TigerShark.png" alt="Imatge 2-1" class="rotating-image">
@@ -87,7 +79,6 @@
         </div>
     </div>
 
-    <!-- Tercera imagen giratoria (opcional) -->
     <div class="rotating-images">
         <div class="image-container">
             <img src="./img/SnapShot.png" alt="Imatge 3-1" class="rotating-image">
@@ -95,7 +86,6 @@
         </div>
     </div>
 
-    <!-- Tercera imagen giratoria (opcional) -->
     <div class="rotating-images">
         <div class="image-container">
             <img src="./img/Nathan.png" alt="Imatge 4-1" class="rotating-image">
@@ -103,7 +93,6 @@
         </div>
     </div>
 
-    <!-- Formulario de inicio de sesión -->
     <div class="contenidorLogin">
         <img src="./img/WallaCards.png" alt="Logo WallaCards" class="logo">
 

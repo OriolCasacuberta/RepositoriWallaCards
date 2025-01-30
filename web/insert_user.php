@@ -30,4 +30,5 @@
         $res = "Error amb la base de dades: " . $e->getMessage();
         echo $res;
     }
+    
 ?>

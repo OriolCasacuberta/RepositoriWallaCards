@@ -1,11 +1,9 @@
-/* Contenedor de imágenes giratorias */
 .rotating-images
 {
     position: absolute;
     perspective: 1000px;
     z-index: 1;
     transition: all 0.5s ease-in-out;
-    /* Suaviza los movimientos */
 }
 
 .rotating-images:first-of-type
@@ -69,7 +67,6 @@
     transform: rotateY(180deg);
 }
 
-/* Animación de las imágenes giratorias */
 @keyframes combinedAnimation
 {
     0%

@@ -21,5 +21,5 @@
         echo 'Error amb la BDs: ' . $e->getMessage() . '<br>';
         return null;
     }
-
+    
 ?>
