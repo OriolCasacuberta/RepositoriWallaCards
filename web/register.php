@@ -1,6 +1,6 @@
 <?php
 
-    session_start();
+    // session_start();
     include 'functions.php';
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST')
@@ -16,6 +16,7 @@
         {
             $result = registrarUsuari($username, $email, $firstName, $lastName, $password);
             $_SESSION['register_message'] = $result;
+            
             header("Location: register.php");
             exit();
         }
@@ -27,9 +28,7 @@
             exit();
         }
     }
-    
 ?>
-
 
 <!DOCTYPE html>
 <html lang="ca">
@@ -45,13 +44,12 @@
         <img src="../img/WallaCards.png" alt="Logo de WallaCards" class="logo">
 
         <!-- Mostrar el missatge de registre (si existeix en la sessió) -->
-        <?php
-            if (isset($_SESSION['register_message']))
-            {
-                echo "<p class='message'>" . $_SESSION['register_message'] . "</p>";
-                unset($_SESSION['register_message']);
-            }
-        ?>
+<!--         
+             if (isset($_SESSION['register_message']))
+             {
+                 echo "<p class='message'>" . $_SESSION['register_message'] . "</p>";
+                 unset($_SESSION['register_message']);
+       -->
 
         <form action="register.php" method="POST">
             <input type="text" name="username" placeholder="Nom d'usuari" required>
