@@ -43,14 +43,6 @@
     <div class="contenidorLogin">
         <img src="../img/WallaCards.png" alt="Logo de WallaCards" class="logo">
 
-        <!-- Mostrar el missatge de registre (si existeix en la sessió) -->
-<!--         
-             if (isset($_SESSION['register_message']))
-             {
-                 echo "<p class='message'>" . $_SESSION['register_message'] . "</p>";
-                 unset($_SESSION['register_message']);
-       -->
-
         <form action="register.php" method="POST">
             <input type="text" name="username" placeholder="Nom d'usuari" required>
             <input type="email" name="email" placeholder="Correu electrònic" required>

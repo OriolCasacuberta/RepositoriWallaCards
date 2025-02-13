@@ -24,4 +24,9 @@ function enviarMailVerificacio($email, $activationCode)
     require_once('mailActivacio.php');
 }
 
+function mailCanviarPassword()
+{
+    
+}
+
 ?>

@@ -67,6 +67,41 @@
     transform: rotateY(180deg);
 }
 
+.popup {
+    display: none; /* El popup está oculto al inicio */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border: 2px solid #333;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+/* Fondo oscuro cuando el popup está activo */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.small-text {
+    font-size: 12px;  /* Ajusta el tamaño de la letra según lo necesites */
+}
+
+#labelRPass
+{
+    margin-bottom: 100px;
+}
+
+
 @keyframes combinedAnimation
 {
     0%
