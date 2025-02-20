@@ -1,133 +1,101 @@
 <?php
+session_start();
 
-    session_start();
+// Si el usuario ya está logueado, lo redirige al home
+if (isset($_SESSION['user'])) {
+    header('Location: ./web/home.php');
+    exit;
+}
 
-    // Verificar si ya hay un usuario registrado en la sesión
-    if (isset($_SESSION['user']))
-    {
-        header('Location: ./web/home.php');
-        exit;
+// Procesar activación de cuenta
+if (isset($_GET['activationCode'], $_GET['email'])) {
+    require_once('./web/connecta_db_persistent.php');
+
+    $activationCode = $_GET['activationCode'];
+    $email = $_GET['email']; // No es necesario urldecode()
+
+    if ($db) {
+        $stmt = $db->prepare("SELECT idUser, activationCode, username, mail, passHash, userFirstName FROM users WHERE mail = :email");
+        $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user && $user['activationCode'] === $activationCode) {
+            $updateStmt = $db->prepare("UPDATE users SET active = 1, activationDate = CURRENT_TIMESTAMP() WHERE idUser = :idUser");
+            $updateStmt->bindParam(':idUser', $user['idUser'], PDO::PARAM_INT);
+            
+            if ($updateStmt->execute()) {
+                $_SESSION['user'] = [
+                    'id' => $user['idUser'],
+                    'username' => $user['username'],
+                    'name' => $user['userFirstName']
+                ];
+                header('Location: ./web/home.php');
+                exit;
+            } else {
+                $error = "Error al activar el compte.";
+            }
+        } else {
+            $error = "Codi d'activació invàlid o usuari inexistent.";
+        }
+    } else {
+        die("Error de connexió a la base de dades.");
     }
+}
 
-    // Si hay parámetros de activación, procesarlos
-    if (isset($_GET['activationCode']) && isset($_GET['email']))
-    {
-        require_once('./web/connecta_db_persistent.php');
-        $activationCode = $_GET['activationCode'];
-        $email = urldecode($_GET['email']);
+// Procesar inicio de sesión
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_once('./web/connecta_db_persistent.php');
 
-        if ($db)
-        {
-            // Verificar si el código de activación y el email coinciden con algún registro
-            $stmt = $db->prepare("SELECT idUser, activationCode, username, mail, passHash, userFirstName FROM users WHERE mail = :email");
-            $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+    if ($db) {
+        $identifier = trim($_POST['username'] ?? '');
+        $password = trim($_POST['password'] ?? '');
+
+        if (!empty($identifier) && !empty($password)) {
+            $stmt = $db->prepare("SELECT idUser, username, mail, passHash, userFirstName, active FROM users
+                                WHERE (username = :identifier OR mail = :identifier) AND active = 1");
+            $stmt->bindParam(':identifier', $identifier, PDO::PARAM_STR);
             $stmt->execute();
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($user)
-            {
-                // Verificar si el código de activación es correcto
-                if ($user['activationCode'] == $activationCode)
-                {
-                    $updateStmt = $db->prepare("UPDATE users SET active = 1, activationDate = NOW() WHERE idUser = :idUser");
-                    $updateStmt->bindParam(':idUser', $user['idUser'], PDO::PARAM_INT);
-                    
-                    if ($updateStmt->execute())
-                    {
-                        // Iniciar sesión automáticamente después de la activación
-                        $_SESSION['user'] = [
-                            'id' => $user['idUser'],
-                            'username' => $user['username'],
-                            'name' => $user['userFirstName']
-                        ];
+            if ($user && password_verify($password, $user['passHash'])) {
+                $updateStmt = $db->prepare("UPDATE users SET lastSignIn = CURRENT_TIMESTAMP() WHERE idUser = :idUser");
+                $updateStmt->bindParam(':idUser', $user['idUser'], PDO::PARAM_INT);
+                $updateStmt->execute();
 
-                        // Redirigir al usuario a la página principal
-                        header('Location: ./web/home.php');
-                        exit;
-                    }
-                    
-                    else
-                    {
-                        echo "Error al activar el compte.";
-                    }
-                }
-                
-                else
-                {
-                    echo "Codi d'activació invàlid.";
-                }
+                $_SESSION['user'] = [
+                    'id' => $user['idUser'],
+                    'username' => $user['username'],
+                    'name' => $user['userFirstName']
+                ];
+
+                setcookie('username', $user['username'], time() + 3600, '/', '', isset($_SERVER['HTTPS']), true);
+
+                header('Location: ./web/home.php');
+                exit;
+            } else {
+                $error = "Credencials incorrectes.";
             }
-            
-            else
-            {
-                echo "No s'ha trobat cap usuari amb aquest correu.";
-            }
+        } else {
+            $error = "Les dades facilitades són incorrectes.";
         }
-        
-        else
-        {
-            die("No s'ha pogut establir la connexió a la base de dades.");
-        }
-        exit; // Detener el flujo si es un proceso de activación
+    } else {
+        die("Error de connexió a la base de dades.");
     }
+}
 
-    // Procesar el inicio de sesión
-    if ($_SERVER['REQUEST_METHOD'] === 'POST')
-    {
-        require_once('./web/connecta_db_persistent.php');
+// Si el usuario solicitó restablecer la contraseña
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['usernamemail'])) {
+    include './web/functions.php';
 
-        if ($db)
-        {
-            $identifier = trim($_POST['username'] ?? '');
-            $password = trim($_POST['password'] ?? '');
+    $usernamemail = $_POST['usernamemail'];
+    $email = comprovarEmail($usernamemail);
 
-            if (!empty($identifier) && !empty($password))
-            {
-                // Verificar si el nombre de usuario o email existe y está activo
-                $stmt = $db->prepare("SELECT idUser, username, mail, passHash, userFirstName, active FROM users
-                                    WHERE (username = :identifier OR mail = :identifier) AND active = 1");
-                $stmt->bindParam(':identifier', $identifier, PDO::PARAM_STR);
-                $stmt->execute();
-                $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                if ($user && password_verify($password, $user['passHash'])) {
-                    // Registrar el último inicio de sesión
-                    $updateStmt = $db->prepare("UPDATE users SET lastSignIn = NOW() WHERE idUser = :idUser");
-                    $updateStmt->bindParam(':idUser', $user['idUser'], PDO::PARAM_INT);
-                    $updateStmt->execute();
-
-                    // Iniciar sesión y guardar información del usuario
-                    $_SESSION['user'] = [
-                        'id' => $user['idUser'],
-                        'username' => $user['username'],
-                        'name' => $user['userFirstName']
-                    ];
-
-                    setcookie('username', $user['username'], time() + 3600, '/', '', true, true);
-
-                    // Redirigir al usuario a la página principal
-                    header('Location: ./web/home.php');
-                    exit;
-                }
-                
-                else
-                {
-                    $error = "L'usuari o la contrasenya no són correctes";
-                }
-            }
-            
-            else
-            {
-                $error = "No és possible iniciar sessió amb les dades facilitades.";
-            }
-        }
-        
-        else
-        {
-            die("No s'ha pogut establir la connexió a la base de dades.");
-        }
-    }
+    crearCodiPassword($email);
+    enviarMailCanviarContrasenya($email);
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="ca">
@@ -188,10 +156,12 @@
             <div id="overlay" class="overlay"></div>
 
             <div id="popup" class="popup">
-                <label id="labelRPass" for="usernamemail">Introduiex el nom d'usuari o el correu</label>
-                <input type="text" id="usernamemail" name="usernamemail" placeholder="Nom d'usuari o correu" required>
-                <button id="sendResetPasswordButton">Enviar correo para restablecer la contrasenya</button>
-                <button id="closePopupButton">Cerrar</button>
+                <form method="POST" action="">
+                    <label id="labelRPass" for="usernamemail">Introduiex el nom d'usuari o el correu</label>
+                    <input type="text" id="usernamemail" name="usernamemail" placeholder="Nom d'usuari o correu" required>
+                    <button id="sendResetPasswordButton">Reestablir contrasenya</button>
+                    <button id="closePopupButton">Cerrar</button>
+                </form>
             </div>
 
 
