@@ -53,16 +53,25 @@ function comprovarEmail($usernamemail)
     return $result ?: false; // Si no hay resultado, devuelve false en lugar de una cadena vacía
 }
 
-
 function crearCodiPassword($email)
 {
     require('generarCodiContrasenya.php');
-    generarPassResetCode($email);
+    return generarPassResetCode($email);
 }
 
-function enviarMailCanviarContrasenya($email)
+function enviarMailCanviarContrasenya($email, $code)
 {
-    require('resetPasswordSend.php');
+    // Pasar el correo y el código al script de envío
+    $_GET['email'] = $email;
+    $_GET['code'] = $code;
+    
+    // Capturar la salida del script
+    ob_start();
+    $result = require(__DIR__ . '/resetPasswordSend.php');
+    $output = ob_get_clean();
+    
+    // Devolver el resultado
+    return $result ? true : $output;
 }
 
 ?>

@@ -26,14 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         ? 'url("../img/fullHeart.png")' 
                         : 'url("../img/emptyHeart.png")';
                 } else {
-                    // Handle error (show alert or console log)
+                    // Handle error (optional)
                     console.error('Like toggle failed:', data.message);
-                    alert(data.message || 'Error al actualizar el like');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error de conexión');
             });
         });
     });

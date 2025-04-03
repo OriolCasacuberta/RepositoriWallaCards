@@ -44,7 +44,7 @@ if (isset($_GET['activationCode'], $_GET['email'])) {
 }
 
 // Procesar inicio de sesión
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username']) && isset($_POST['password'])) {
     require_once('./web/connecta_db_persistent.php');
 
     if ($db) {
@@ -88,14 +88,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['usernamemail'])) {
     include './web/functions.php';
 
-    $usernamemail = $_POST['usernamemail'];
+    $usernamemail = trim($_POST['usernamemail']);
     $email = comprovarEmail($usernamemail);
 
-    crearCodiPassword($email);
-    enviarMailCanviarContrasenya($email);
+    if ($email) {
+        // Genera el código y lo guarda en la BD
+        $passCode = crearCodiPassword($email);
+        
+        if (is_string($passCode) && !strpos($passCode, 'Error')) {
+            // Envía el correo electrónico con el código
+            $mailResult = enviarMailCanviarContrasenya($email, $passCode);
+            
+            if ($mailResult === true) {
+                $resetMessage = "S'ha enviat un correu electrònic amb instruccions per restablir la contrasenya.";
+            } else {
+                $resetMessage = "Error al enviar el correu: " . $mailResult;
+            }
+        } else {
+            $resetMessage = $passCode; // Si hay un error, muestra el mensaje de error
+        }
+    } else {
+        $resetMessage = "No s'ha trobat cap compte amb aquest nom d'usuari o correu electrònic.";
+    }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="ca">
@@ -164,8 +180,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['usernamemail'])) {
                 </form>
             </div>
 
-
-
+            <?php if (isset($resetMessage)): ?>
+                <div class="reset-message"><?php echo htmlspecialchars($resetMessage); ?></div>
+            <?php endif; ?>
 
         </div>
 

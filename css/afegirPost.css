@@ -1,0 +1,126 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f3fdf3; /* Color de fondo general */
+}
+
+/* Contenedor del formulario */
+.form-post {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Grupos del formulario */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Botones y enlaces */
+.form-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    gap: 10px; /* Espacio uniforme */
+}
+
+button, 
+.btn-primary,
+.btn-secondary,
+.btn-add-post,
+a {
+    flex: 1; /* Ocupan el mismo ancho */
+    padding: 10px;
+    text-align: center;
+    font-size: 16px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+}
+
+/* Estilos específicos para botones */
+button,
+.btn-primary,
+.btn-add-post {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+button:hover,
+.btn-primary:hover,
+.btn-add-post:hover {
+    background-color: #218838;
+}
+
+.btn-secondary {
+    background-color: #f44336;
+    color: white;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background-color: #d32f2f;
+}
+
+/* Enlaces que deben parecer botones */
+a {
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+a:hover {
+    background-color: #0056b3;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    button, 
+    .btn-primary, 
+    .btn-secondary,
+    .btn-add-post,
+    a {
+        width: 100%; /* Ocuparán todo el ancho en móvil */
+    }
+}

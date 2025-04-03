@@ -2,8 +2,7 @@
 
 function generarPassResetCode($email)
 {
-    // Conectar a la base de datos
-    require('./connecta_db_persistent.php');
+    require('./web/connecta_db_persistent.php');
     
     if (empty($email)) 
     {
@@ -33,9 +32,10 @@ function generarPassResetCode($email)
         $update->bindParam(':passCode', $passCode, PDO::PARAM_STR);
     
         if ($update->execute()) {
-            return 'Codi de restabliment generat correctament.';
+            // Retornar el código generado para que pueda ser usado en el correo
+            return $passCode;
         } else {
-            return 'Error: No s’ha pogut actualitzar el codi de restabliment.';
+            return 'Error: No se ha podido actualizar el código de restablecimiento.';
         }
     }
     
@@ -44,4 +44,5 @@ function generarPassResetCode($email)
         return "Error en la base de datos: " . $e->getMessage();
     }
 }
+
 ?>
